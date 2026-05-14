@@ -54,6 +54,11 @@ KEEP_EMPTY_STRINGS = True
 # Logging settings
 VERBOSE = True
 
+# Optional:
+# If empty string -> scan all CSVs normally
+# If set -> ONLY scan this file for IDs in TARGET_ID_COLUMN
+UUID_SOURCE_FILENAME = ""
+
 # ============================================================
 # UUID REGEX
 # ============================================================
@@ -159,9 +164,20 @@ for file in csv_files:
 uuid_map: Dict[str, str] = {}
 all_new_ids = set()
 
-log(f"\nScanning for UUIDv4 values in '{TARGET_ID_COLUMN}' columns...")
+if UUID_SOURCE_FILENAME:
+    log(
+        f"\nScanning only '{UUID_SOURCE_FILENAME}' "
+        f"for UUIDv4 values in '{TARGET_ID_COLUMN}'..."
+    )
+else:
+    log(f"\nScanning all files for UUIDv4 values " f"in '{TARGET_ID_COLUMN}'...")
 
 for filename, df in tables.items():
+
+    # If a source filename is configured,
+    # skip every other file during UUID discovery
+    if UUID_SOURCE_FILENAME and filename != UUID_SOURCE_FILENAME:
+        continue
 
     if TARGET_ID_COLUMN not in df.columns:
         continue
